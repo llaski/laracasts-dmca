@@ -2,6 +2,7 @@
 
 Route::get('/', 'PagesController@home');
 
+Route::get('notices/confirm', 'NoticesController@confirm');
 Route::resource('notices', 'NoticesController');
 
 Route::controllers([

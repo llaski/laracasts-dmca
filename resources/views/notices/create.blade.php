@@ -3,11 +3,11 @@
 @section('content')
 	<h1 class="page-heading">Create Form</h1>
 
-	{!! Form::open() !!}
+	{!! Form::open(['method' => 'GET', 'action' => 'NoticesController@confirm']) !!}
 
 		<div class="form-group">
 			{!! Form::label('provider_id', 'Who are we sending this to?', ['class' => 'form-label']) !!}
-			{!! Form::select('provider_id', $providers = [], null, ['class' => 'form-control']) !!}
+			{!! Form::select('provider_id', $providers, null, ['class' => 'form-control']) !!}
 		</div>
 
 		<div class="form-group">
@@ -35,4 +35,7 @@
 		</div>
 
 	{!! Form::close() !!}
+
+	@include('errors.list')
+
 @stop
