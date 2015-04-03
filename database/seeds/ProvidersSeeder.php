@@ -14,7 +14,7 @@ class ProvidersSeeder extends Seeder {
 	public function run()
 	{
 		$providers = [
-			['name' => 'YouTube', 'copyright_email' => 'copyright@youtube.com']
+			['name' => 'YouTube', 'copyright_email' => 'larry.laski@gmail.com']
 		];
 
 		foreach($providers as $provider)
