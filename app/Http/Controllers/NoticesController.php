@@ -17,18 +17,21 @@ class NoticesController extends Controller {
 	 */
 	public function __construct()
 	{
+		parent::__construct();
+
 		$this->middleware('auth');
 	}
 
 	/**
 	 * Show all notices
 	 *
-	 * @param  Guard  $auth
 	 * @return string
 	 */
-	public function index(Guard $auth)
+	public function index()
 	{
-		return $auth->user()->notices;
+		$notices = $this->user->notices()->latest()->get();
+
+		return view('notices.index', compact('notices'));
 	}
 
 	/**
@@ -51,9 +54,9 @@ class NoticesController extends Controller {
 	 * @param  Guard                $auth
 	 * @return \Response
 	 */
-	public function confirm(PrepareNoticeRequest $request, Guard $auth)
+	public function confirm(PrepareNoticeRequest $request)
 	{
-		$template = $this->compileDmcaTemplate($data = $request->all(), $auth);
+		$template = $this->compileDmcaTemplate($data = $request->all());
 
 		session()->flash('dmca', $data);
 
@@ -64,14 +67,13 @@ class NoticesController extends Controller {
 	 * Compile the DMCA Template from the form data
 	 *
 	 * @param  array $data
-	 * @param  Guard  $auth
 	 * @return mixed
 	 */
-	private function compileDmcaTemplate($data, Guard $auth)
+	private function compileDmcaTemplate($data)
 	{
 		$data = $data + [
-			'name' => $auth->user()->name,
-			'email' => $auth->user()->email
+			'name' => $this->user->name,
+			'email' => $this->user->email
 		];
 
 		return view()->file(app_path('Http/Templates/dmca.blade.php'), $data);
@@ -83,10 +85,10 @@ class NoticesController extends Controller {
 	 * @param  Illuminate\Auth\Guard $auth
 	 * @return mixed
 	 */
-	public function store(Request $request, Guard $auth)
+	public function store(Request $request)
 	{
 		try {
-			$notice = $this->createNotice($request, $auth);
+			$notice = $this->createNotice($request);
 
 			Mail::queue('emails.dmca', compact('notice'), function($message) use ($notice)
 			{
@@ -107,14 +109,13 @@ class NoticesController extends Controller {
 	/**
 	 * Create new notice
 	 * @param  App\Http\Requests $request
-	 * @param  Illuminate\Auth\Guard $auth
 	 * @return mixed
 	 */
-	private function createNotice(Request $request, Guard $auth)
+	private function createNotice(Request $request)
 	{
 		$data = array_merge(session()->get('dmca'), ['template' => $request->input('template')]);
 
-		$notice = $auth->user()->notices()->create($data);
+		$notice = $this->user->notices()->create($data);
 
 		return $notice;
 	}
