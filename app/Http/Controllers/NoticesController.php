@@ -82,7 +82,6 @@ class NoticesController extends Controller {
 	/**
 	 * Store new notice
 	 * @param  App\Http\Requests $request
-	 * @param  Illuminate\Auth\Guard $auth
 	 * @return mixed
 	 */
 	public function store(Request $request)
@@ -90,12 +89,14 @@ class NoticesController extends Controller {
 		try {
 			$notice = $this->createNotice($request);
 
-			Mail::queue('emails.dmca', compact('notice'), function($message) use ($notice)
+			Mail::queue(['text' => 'emails.dmca'], compact('notice'), function($message) use ($notice)
 			{
 				$message->from($notice->getUserEmail())
 								->to($notice->getProviderEmail())
 								->subject('DMCA Notice');
 			});
+
+			flash('Your DMCA notice has been delivered');
 
 			return redirect('notices');
 		}
@@ -104,6 +105,21 @@ class NoticesController extends Controller {
 			session()->keep(['dmca']);
 			throw new $e;
 		}
+	}
+
+	/**
+	 * Update notice
+	 * @param  App\Http\Requests $request
+	 * @return mixed
+	 */
+	public function update($noticeId, Request $request)
+	{
+		$isRemoved = $request->has('content_removed');
+
+		Notice::findOrFail($noticeId)
+			->update(['content_removed' => $isRemoved]);
+
+		return response()->json();
 	}
 
 	/**
